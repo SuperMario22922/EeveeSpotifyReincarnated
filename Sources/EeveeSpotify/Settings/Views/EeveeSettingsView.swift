@@ -1,3 +1,4 @@
+import EeveeSpotifyC
 import SwiftUI
 import UIKit
 
@@ -7,6 +8,8 @@ struct EeveeSettingsView: View {
     
     @State private var hasShownCommonIssuesTip = UserDefaults.hasShownCommonIssuesTip
     @State private var isClearingData = false
+    @State private var isPresentingDevNoteSheet = false
+
 
     private func confirmDestructive(
         title: String,
@@ -129,7 +132,47 @@ struct EeveeSettingsView: View {
                 )
             }
 
+            Button {
+                pushSettingsController(
+                    with: EeveeMiscellaneousSettingsView(),
+                    title: "miscellaneous".localized
+                )
+            } label: {
+                NavigationSectionView(
+                    color: .gray,
+                    title: "miscellaneous".localized,
+                    imageSystemName: "ellipsis.circle.fill"
+                )
+            }
+
+            Button {
+                // spoti.pw is a UIKit page (an SGPage), not a SwiftUI view, so it's pushed
+                // directly onto the same navigation stack instead of going through
+                // pushSettingsController(with:title:), which wraps a SwiftUI view.
+                navigationController.pushViewController(SGModSettingsPage(), animated: true)
+            } label: {
+                NavigationSectionView(
+                    color: Color(hex: "#1ED760"),
+                    title: "spoti.pw",
+                    imageSystemName: "slider.horizontal.3"
+                )
+            }
+
             //
+
+            Section {
+                Button {
+                    isPresentingDevNoteSheet = true
+                } label: {
+                    HStack {
+                        Image(systemName: "person.fill.questionmark")
+                        Text("\("developer_note".localized)...")
+                    }
+                }
+            }
+            .sheet(isPresented: $isPresentingDevNoteSheet) {
+                EeveeDevNoteView()
+            }
 
             Section(header: Text("debug_title".localized), footer: Text("debug_section_footer".localized)) {
                 Button {
@@ -235,7 +278,7 @@ struct EeveeSettingsView: View {
         
         .animation(.default, value: isClearingData)
         .animation(.default, value: hasShownCommonIssuesTip)
-        
+
         .onAppear {
             WindowHelper.shared.overrideUserInterfaceStyle(.dark)
         }
